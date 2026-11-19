@@ -781,8 +781,17 @@ function convertBaseSchema(schema: JSONSchema.JSONSchema, ctx: ConversionContext
 
         zodSchema = arraySchema;
       } else {
-        // No items specified - array of any
-        zodSchema = z.array(z.any());
+        // No items specified - array of any, with any length constraints
+        let arraySchema = z.array(z.any());
+
+        if (typeof schema.minItems === "number") {
+          arraySchema = arraySchema.min(schema.minItems);
+        }
+        if (typeof schema.maxItems === "number") {
+          arraySchema = arraySchema.max(schema.maxItems);
+        }
+
+        zodSchema = arraySchema;
       }
 
       // minContains/maxContains only constrain anything when `contains` itself is present
