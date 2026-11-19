@@ -35,6 +35,32 @@ test("pattern is not implicitly anchored", () => {
   expect(() => schema.parse("bar")).toThrow(); // no match
 });
 
+test("pattern with unicode property escapes", () => {
+  const schema = fromJSONSchema({
+    type: "string",
+    pattern: "^\\p{L}+$",
+  });
+  expect(schema.parse("josé")).toBe("josé");
+  expect(() => schema.parse("p{L}")).toThrow();
+  expect(() => schema.parse("abc1")).toThrow();
+
+  // patterns that are only valid without the `u` flag keep working
+  const legacy = fromJSONSchema({
+    type: "string",
+    pattern: "^\\-$",
+  });
+  expect(legacy.parse("-")).toBe("-");
+});
+
+test("idn-email format", () => {
+  const schema = fromJSONSchema({
+    type: "string",
+    format: "idn-email",
+  });
+  expect(schema.parse("josé@example.com")).toBe("josé@example.com");
+  expect(() => schema.parse("not an email")).toThrow();
+});
+
 test("number schema", () => {
   const schema = fromJSONSchema({ type: "number" });
   expect(schema.parse(42)).toBe(42);
