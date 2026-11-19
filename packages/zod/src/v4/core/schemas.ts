@@ -4664,7 +4664,8 @@ export const $ZodReadonly: core.$constructor<$ZodReadonly> = /*@__PURE__*/ core.
 
 function handleReadonlyResult(payload: ParsePayload): ParsePayload {
   // A repeat visit hands back a node that is still being built; freezing it here would make the rest of its keys fail to assign.
-  if (!payload.memo) payload.value = Object.freeze(payload.value);
+  // a failed parse leaves the caller's input in `value`; freezing it would mutate their object, and would throw outright for typed arrays
+  if (!payload.memo && payload.issues.length === 0) payload.value = Object.freeze(payload.value);
   return payload;
 }
 
